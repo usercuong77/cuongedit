@@ -68,6 +68,11 @@
       --my: 25%;
     }
 
+    html, body{
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+
     body{
       background:
         radial-gradient(1200px 700px at 10% 0%, rgba(10,132,255,.14), transparent 55%),
@@ -1198,6 +1203,98 @@
       return `https://www.youtube-nocookie.com/embed/${ytId}?autoplay=1&mute=1&loop=1&playlist=${ytId}&controls=0&rel=0&modestbranding=1&iv_load_policy=3&playsinline=1&disablekb=1`;
     }
 
+    function toCardPreviewThumb(url){
+      const ytId = getYouTubeId(url);
+      if(!ytId) return "";
+      return `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg`;
+    }
+
+    const mobilePreviewMQ = window.matchMedia("(max-width: 767px)");
+    let isMobilePreviewMode = mobilePreviewMQ.matches;
+    let mobilePreviewObserver = null;
+    let mobileActiveSlot = null;
+
+    function stopMobileSlot(slot){
+      if(!slot) return;
+      const frame = qs(".mobile-preview-frame", slot);
+      const thumb = qs(".mobile-preview-thumb", slot);
+      if(frame){
+        frame.src = "";
+        frame.classList.add("hidden");
+      }
+      if(thumb) thumb.classList.remove("hidden");
+      slot.setAttribute("data-visibility", "0");
+    }
+
+    function playMobileSlot(slot){
+      if(!slot || mobileActiveSlot === slot) return;
+      if(mobileActiveSlot && mobileActiveSlot !== slot){
+        stopMobileSlot(mobileActiveSlot);
+      }
+      const frame = qs(".mobile-preview-frame", slot);
+      const thumb = qs(".mobile-preview-thumb", slot);
+      const embed = slot.getAttribute("data-embed") || "";
+      if(!frame || !embed) return;
+      frame.src = embed;
+      frame.classList.remove("hidden");
+      if(thumb) thumb.classList.add("hidden");
+      mobileActiveSlot = slot;
+    }
+
+    function stopAllMobilePreviewSlots(){
+      qsa("[data-mobile-preview]").forEach(stopMobileSlot);
+      mobileActiveSlot = null;
+    }
+
+    function evaluateMobilePreviewPlayback(){
+      if(!isMobilePreviewMode){
+        stopAllMobilePreviewSlots();
+        return;
+      }
+      let bestSlot = null;
+      let bestRatio = 0;
+      qsa("[data-mobile-preview]").forEach(slot=>{
+        const ratio = Number(slot.getAttribute("data-visibility") || "0");
+        if(ratio > bestRatio){
+          bestRatio = ratio;
+          bestSlot = slot;
+        }
+      });
+
+      if(bestSlot && bestRatio >= 0.6){
+        playMobileSlot(bestSlot);
+      } else if(mobileActiveSlot){
+        stopMobileSlot(mobileActiveSlot);
+        mobileActiveSlot = null;
+      }
+    }
+
+    function bindMobilePreviewAutoplay(){
+      if(mobilePreviewObserver){
+        mobilePreviewObserver.disconnect();
+        mobilePreviewObserver = null;
+      }
+      stopAllMobilePreviewSlots();
+      if(!isMobilePreviewMode) return;
+
+      const slots = qsa("[data-mobile-preview]");
+      if(!slots.length) return;
+
+      mobilePreviewObserver = new IntersectionObserver((entries)=>{
+        entries.forEach(entry=>{
+          entry.target.setAttribute("data-visibility", String(entry.intersectionRatio || 0));
+        });
+        evaluateMobilePreviewPlayback();
+      }, { threshold: [0, 0.2, 0.4, 0.6, 0.75, 1] });
+
+      slots.forEach(slot=>{
+        slot.setAttribute("data-visibility", "0");
+        mobilePreviewObserver.observe(slot);
+      });
+
+      requestAnimationFrame(evaluateMobilePreviewPlayback);
+    }
+
     function renderFilters(){
       const keys = ["all"];
       filtersWrap.innerHTML = keys.map(k=>{
@@ -1233,20 +1330,22 @@
           const tags = (p.tags && p.tags[currentLang]) ? p.tags[currentLang] : p.tags.en;
           const openLabel = I18N[currentLang].work.open;
           const previewEmbed = p.isShort ? toCardPreviewEmbed(p.url) : "";
-          const playBubble = previewEmbed
+          const previewThumb = p.isShort ? toCardPreviewThumb(p.url) : "";
+          const cardAnimateAttrs = isMobilePreviewMode ? "" : `data-animate data-delay="${delay}"`;
+          const playBubble = (previewEmbed && !isMobilePreviewMode)
             ? "bg-white/40 backdrop-blur-sm"
             : "bg-white/60";
 
           return `
             <article class="group relative rounded-3xl overflow-hidden glass border border-[rgba(15,23,42,.10)] lift cursor-pointer"
-                     data-animate data-delay="${delay}"
+                     ${cardAnimateAttrs}
                      role="button"
                      tabindex="0"
                      aria-label="${title}"
                      data-project-id="${p.id}">
               <div class="aspect-[9/16] w-full relative overflow-hidden">
                 <div class="absolute inset-0 bg-gradient-to-br from-primary/10 via-white/10 to-accent/10"></div>
-                ${previewEmbed ? `
+                ${previewEmbed && !isMobilePreviewMode ? `
                   <iframe class="absolute inset-0 w-full h-full pointer-events-none"
                           src="${previewEmbed}"
                           title="${title}"
@@ -1255,6 +1354,23 @@
                           referrerpolicy="strict-origin-when-cross-origin"
                           allowfullscreen></iframe>
                   <div class="absolute inset-0 bg-gradient-to-t from-white/16 via-transparent to-transparent pointer-events-none"></div>
+                ` : previewThumb && isMobilePreviewMode ? `
+                  <div class="absolute inset-0" data-mobile-preview data-embed="${previewEmbed}">
+                    <img class="mobile-preview-thumb absolute inset-0 w-full h-full object-cover pointer-events-none"
+                         src="${previewThumb}"
+                         alt="${title}"
+                         loading="lazy"
+                         decoding="async"
+                         referrerpolicy="strict-origin-when-cross-origin" />
+                    <iframe class="mobile-preview-frame absolute inset-0 w-full h-full pointer-events-none hidden"
+                            src=""
+                            title="${title}"
+                            frameborder="0"
+                            allow="autoplay; encrypted-media; picture-in-picture"
+                            referrerpolicy="strict-origin-when-cross-origin"
+                            allowfullscreen></iframe>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent pointer-events-none"></div>
+                  </div>
                 ` : ""}
 
                 <div class="absolute -top-12 -right-14 w-40 h-40 rounded-full bg-primary/18 blur-3xl"></div>
@@ -1293,6 +1409,7 @@
 
         lucide.createIcons();
         observeNewAnimations(grid);
+        bindMobilePreviewAutoplay();
       };
 
       if(opts.withSkeleton && !prefersReduced){
@@ -1336,6 +1453,21 @@
         openModal({id});
       }
     });
+
+    function onMobilePreviewModeChange(e){
+      const next = !!e.matches;
+      if(next === isMobilePreviewMode) return;
+      isMobilePreviewMode = next;
+      if(!isMobilePreviewMode){
+        stopAllMobilePreviewSlots();
+      }
+      renderGrid({withSkeleton:false});
+    }
+    if(mobilePreviewMQ.addEventListener){
+      mobilePreviewMQ.addEventListener("change", onMobilePreviewModeChange);
+    } else if(mobilePreviewMQ.addListener){
+      mobilePreviewMQ.addListener(onMobilePreviewModeChange);
+    }
 
     renderFilters();
     renderGrid({withSkeleton:false});
