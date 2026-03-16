@@ -1,0 +1,1517 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Cuong Edit — Apple Glass Portfolio</title>
+
+  <meta name="description" content="Video editor portfolio — short-form (TikTok/Reels/Shorts), motion, sound design, pacing & storytelling." />
+  <meta name="theme-color" content="#f6f7fb" />
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: [
+              "ui-sans-serif",
+              "system-ui",
+              "-apple-system",
+              "BlinkMacSystemFont",
+              "SF Pro Display",
+              "SF Pro Text",
+              "Segoe UI",
+              "Inter",
+              "Roboto",
+              "Arial",
+              "sans-serif",
+            ],
+          },
+          colors: {
+            ink: "#0b1220",
+            softInk: "#1f2937",
+            paper: "#f6f7fb",
+            stroke: "rgba(15, 23, 42, .10)",
+            stroke2: "rgba(15, 23, 42, .14)",
+            primary: "#0A84FF",
+            accent: "#7C3AED",
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    :root{
+      --ease-out: cubic-bezier(.16, 1, .3, 1);
+      --ease-std: cubic-bezier(.2, .8, .2, 1);
+
+      /* Motion system (consistent, Apple-ish) */
+      --t-fast: 260ms;
+      --t-med: 420ms;
+      --t-slow: 650ms;
+      --t-reveal: 1200ms;
+
+      --ring: 0 0 0 6px rgba(10,132,255,.18);
+      --nav-h: 72px;
+
+      /* Spotlight vars */
+      --mx: 50%;
+      --my: 25%;
+    }
+
+    body{
+      background:
+        radial-gradient(1200px 700px at 10% 0%, rgba(10,132,255,.14), transparent 55%),
+        radial-gradient(900px 600px at 92% 20%, rgba(124,58,237,.12), transparent 55%),
+        radial-gradient(1200px 900px at 50% 120%, rgba(10,132,255,.10), transparent 60%),
+        #f6f7fb;
+    }
+
+    ::selection { background: rgba(10,132,255,.22); color: #0b1220; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 10px; }
+    ::-webkit-scrollbar-track { background: rgba(15, 23, 42, .04); }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(15, 23, 42, .14);
+      border-radius: 999px;
+      border: 2px solid rgba(255,255,255,.55);
+    }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(10,132,255,.35); }
+
+    /* Premium noise */
+    .noise::before{
+      content:"";
+      position:absolute; inset:0;
+      pointer-events:none;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='260' height='260' filter='url(%23n)' opacity='.16'/%3E%3C/svg%3E");
+      mix-blend-mode: soft-light;
+      opacity:.35;
+    }
+
+    /* Apple glass (more depth + inner highlight) */
+    .glass{
+      background: rgba(255,255,255,.58);
+      backdrop-filter: blur(18px) saturate(180%);
+      -webkit-backdrop-filter: blur(18px) saturate(180%);
+      border: 1px solid rgba(15, 23, 42, .10);
+      box-shadow:
+        0 14px 45px rgba(15, 23, 42, .08),
+        0 2px 10px rgba(15,23,42,.04),
+        inset 0 1px 0 rgba(255,255,255,.75),
+        inset 0 -1px 0 rgba(255,255,255,.25);
+    }
+
+    .glass-soft{
+      background: rgba(255,255,255,.48);
+      backdrop-filter: blur(16px) saturate(175%);
+      -webkit-backdrop-filter: blur(16px) saturate(175%);
+      border: 1px solid rgba(15, 23, 42, .10);
+      box-shadow:
+        0 10px 30px rgba(15, 23, 42, .07),
+        inset 0 1px 0 rgba(255,255,255,.65);
+    }
+
+    .clamp-2{
+      display:-webkit-box;
+      -webkit-line-clamp:2;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+    }
+
+    :focus{ outline:none; }
+    :focus-visible{
+      box-shadow: var(--ring);
+      border-color: rgba(10,132,255,.45) !important;
+    }
+
+    /* Base interactive motion */
+    .lift{
+      transform: translateY(0);
+      transition:
+        transform var(--t-med) var(--ease-out),
+        box-shadow var(--t-med) var(--ease-out),
+        border-color var(--t-med) var(--ease-out),
+        filter var(--t-med) var(--ease-out);
+      will-change: transform;
+    }
+    .lift:hover{
+      transform: translateY(-6px);
+      box-shadow: 0 20px 60px rgba(15,23,42,.12);
+      border-color: rgba(10,132,255,.28);
+      filter: saturate(1.02);
+    }
+
+    [data-animate]{
+      opacity: 0;
+      transform: translateY(18px) scale(.992);
+      will-change: transform, opacity;
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      html{ scroll-behavior: auto !important; }
+      *{ animation:none !important; transition:none !important; }
+      [data-animate]{ opacity: 1 !important; transform: none !important; }
+    }
+
+    /* Mobile panel */
+    .panel{
+      transform: translateX(100%);
+      transition: transform var(--t-slow) var(--ease-out);
+      will-change: transform;
+    }
+    .panel.open{ transform: translateX(0); }
+
+    /* Modal (desktop default) */
+    .modal-backdrop{ opacity:0; transition: opacity 320ms var(--ease-out); }
+    .modal-backdrop.open{ opacity:1; }
+    .modal-box{
+      transform: translateY(14px) scale(.985);
+      opacity:0;
+      transition: transform 320ms var(--ease-out), opacity 320ms var(--ease-out);
+    }
+    .modal-box.open{ transform: translateY(0) scale(1); opacity:1; }
+
+    /* Bottom sheet on mobile */
+    @media (max-width: 768px){
+      .modal-box{
+        position: fixed;
+        left: 12px;
+        right: 12px;
+        bottom: 12px;
+        max-width: none !important;
+        border-radius: 26px;
+        transform: translateY(24px);
+        opacity: 0;
+      }
+      .modal-box.open{
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    /* Active nav underline */
+    .navlink{ position: relative; transition: color var(--t-fast) var(--ease-out); }
+    .navlink.active{ color: #0b1220 !important; }
+    .navlink.active::after{
+      content:"";
+      position:absolute;
+      left:0; right:0;
+      bottom:-10px;
+      height:2px;
+      border-radius:999px;
+      background: linear-gradient(90deg, rgba(10,132,255,1), rgba(124,58,237,1));
+      opacity:.9;
+    }
+
+    /* Buttons */
+    .btn-primary{
+      background: linear-gradient(180deg, rgba(10,132,255,1), rgba(0,122,255,1));
+      box-shadow: 0 14px 40px rgba(10,132,255,.22);
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-primary:hover{ box-shadow: 0 18px 55px rgba(10,132,255,.28); }
+
+    /* Shine sweep (subtle, premium) */
+    .btn-primary::after{
+      content:"";
+      position:absolute;
+      top:-40%;
+      left:-60%;
+      width: 55%;
+      height: 180%;
+      transform: rotate(18deg);
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.55), transparent);
+      opacity: .0;
+      transition: opacity var(--t-fast) var(--ease-out);
+    }
+    .btn-primary:hover::after{ opacity: .75; animation: sweep 1.15s var(--ease-out) 1; }
+    @keyframes sweep{
+      from{ left:-60%; }
+      to{ left: 120%; }
+    }
+
+    .btn-glass{
+      background: rgba(255,255,255,.60);
+      border: 1px solid rgba(15,23,42,.10);
+      box-shadow: 0 10px 30px rgba(15,23,42,.08), inset 0 1px 0 rgba(255,255,255,.78);
+    }
+    .btn-glass:hover{
+      border-color: rgba(10,132,255,.24);
+      box-shadow: 0 16px 48px rgba(15,23,42,.10), inset 0 1px 0 rgba(255,255,255,.88);
+    }
+
+    /* Orbs */
+    .orb{ filter: blur(80px); opacity: .55; transform: translate3d(0,0,0); will-change: transform; }
+
+    /* Segmented control */
+    .seg{
+      display:inline-flex;
+      padding: 4px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.55);
+      border: 1px solid rgba(15,23,42,.10);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.7);
+      backdrop-filter: blur(14px) saturate(180%);
+      -webkit-backdrop-filter: blur(14px) saturate(180%);
+    }
+    .seg button{
+      min-height: 44px; /* tap target */
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 12px;
+      color: rgba(31,41,55,.75);
+      transition: background var(--t-med) var(--ease-out), color var(--t-med) var(--ease-out), transform var(--t-med) var(--ease-out);
+      display:inline-flex;
+      align-items:center;
+      gap: 6px;
+    }
+    .seg button:hover{ transform: translateY(-1px); }
+    .seg button.active{
+      background: rgba(255,255,255,.85);
+      color: rgba(11,18,32,1);
+      box-shadow: 0 8px 22px rgba(15,23,42,.10), inset 0 1px 0 rgba(255,255,255,.95);
+    }
+
+    /* Skip link */
+    .skip-link{
+      position:absolute;
+      left: 12px;
+      top: 12px;
+      transform: translateY(-180%);
+      transition: transform var(--t-fast) var(--ease-out);
+      z-index: 1000;
+    }
+    .skip-link:focus{ transform: translateY(0); }
+
+    /* Navbar hide/reveal */
+    #navbarWrap{
+      transition: transform var(--t-slow) var(--ease-out), opacity var(--t-slow) var(--ease-out);
+      will-change: transform;
+    }
+    .nav-hidden{ transform: translateY(-120%); opacity: .0; }
+
+    /* Spotlight (hero) */
+    .spotlight{
+      position: relative;
+      isolation: isolate;
+    }
+    .spotlight::before{
+      content:"";
+      position:absolute;
+      inset:-80px -40px;
+      background:
+        radial-gradient(520px 420px at var(--mx) var(--my), rgba(10,132,255,.14), transparent 60%),
+        radial-gradient(520px 420px at calc(var(--mx) + 12%) calc(var(--my) + 10%), rgba(124,58,237,.10), transparent 60%);
+      opacity: .9;
+      pointer-events:none;
+      transition: opacity var(--t-slow) var(--ease-out);
+      z-index: -1;
+    }
+
+    /* Sticky filter bar */
+    #filterBar{
+      position: sticky;
+      top: calc(var(--nav-h) + 18px);
+      z-index: 20;
+      transform: translateZ(0);
+    }
+    #filterBar.stuck .bar{
+      box-shadow: 0 18px 60px rgba(15,23,42,.12);
+      border-color: rgba(10,132,255,.18);
+    }
+
+    /* Skeleton shimmer */
+    .skeleton{
+      position: relative;
+      overflow: hidden;
+      background: rgba(255,255,255,.48);
+      border: 1px solid rgba(15,23,42,.10);
+      border-radius: 24px;
+      min-height: 240px;
+    }
+    .skeleton::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.65), transparent);
+      transform: translateX(-120%);
+      animation: shimmer 1.2s var(--ease-std) infinite;
+      opacity: .65;
+    }
+    @keyframes shimmer{
+      from{ transform: translateX(-120%); }
+      to{ transform: translateX(120%); }
+    }
+
+    /* Quick preview drawer in cards */
+    .drawer{
+      transform: translateY(24px);
+      opacity: 0;
+      transition: transform var(--t-med) var(--ease-out), opacity var(--t-med) var(--ease-out);
+    }
+    .group:hover .drawer{
+      transform: translateY(0);
+      opacity: 1;
+    }
+    @media (max-width: 768px){
+      .drawer{ display:none; } /* bottom sheet covers mobile */
+    }
+  </style>
+</head>
+
+<body class="text-softInk font-sans overflow-x-hidden">
+  <a class="skip-link glass-soft rounded-xl px-4 py-3 text-ink font-semibold border border-[rgba(15,23,42,.10)]" href="#portfolio" data-i18n="a11y.skip">
+    Skip to work
+  </a>
+
+  <!-- Background -->
+  <div class="fixed inset-0 -z-10 noise">
+    <div class="absolute -top-24 -left-24 w-[34rem] h-[34rem] rounded-full bg-primary/25 orb" data-orb="1"></div>
+    <div class="absolute top-[15%] right-[-10rem] w-[38rem] h-[38rem] rounded-full bg-accent/20 orb" data-orb="2"></div>
+    <div class="absolute bottom-[-12rem] left-[35%] w-[42rem] h-[42rem] rounded-full bg-primary/18 orb" data-orb="3"></div>
+    <div class="absolute inset-0 bg-gradient-to-b from-white/0 via-white/0 to-white/20"></div>
+  </div>
+
+  <!-- NAV -->
+  <nav id="navbar" class="fixed w-full z-50">
+    <div id="navbarWrap" class="container mx-auto px-6">
+      <div class="mt-4 glass rounded-2xl px-4 md:px-6 py-3 flex items-center justify-between gap-3">
+        <a href="#home" class="flex items-center gap-2 text-lg md:text-xl font-semibold tracking-tight text-ink">
+          <i data-lucide="clapperboard" class="text-primary"></i>
+          <span>CUONG<span class="text-primary">.EDIT</span></span>
+        </a>
+
+        <ul class="hidden md:flex items-center gap-8 text-sm font-medium text-softInk/70">
+          <li><a class="navlink hover:text-ink" href="#home" data-i18n="nav.home">Home</a></li>
+          <li><a class="navlink hover:text-ink" href="#portfolio" data-i18n="nav.work">Work</a></li>
+          <li><a class="navlink hover:text-ink" href="#about" data-i18n="nav.about">About</a></li>
+          <li><a class="navlink hover:text-ink" href="#contact" data-i18n="nav.contact">Contact</a></li>
+        </ul>
+
+        <div class="flex items-center gap-3">
+          <!-- Language switcher -->
+          <div class="hidden md:inline-flex seg" aria-label="Language switcher">
+            <button id="langEN" type="button" class="active" aria-label="English">
+              <i data-lucide="globe" class="w-4 h-4 text-primary"></i>
+              EN
+            </button>
+            <button id="langVI" type="button" aria-label="Vietnamese">
+              VI
+            </button>
+          </div>
+
+          <a href="#contact"
+             class="hidden md:inline-flex items-center justify-center px-5 py-2.5 rounded-full text-white font-semibold transition-all lift btn-primary"
+             data-i18n="nav.hire">
+            Hire me
+          </a>
+
+          <button id="menuBtn" class="md:hidden inline-flex items-center justify-center w-11 h-11 rounded-xl bg-white/40 border border-[rgba(15,23,42,.12)] hover:border-[rgba(15,23,42,.18)] transition-colors"
+                  aria-label="Open menu" aria-expanded="false">
+            <i data-lucide="menu"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MOBILE MENU -->
+  <div id="menuOverlay" class="fixed inset-0 z-[60] hidden">
+    <div class="absolute inset-0 bg-black/20 backdrop-blur-sm"></div>
+
+    <div class="absolute right-0 top-0 h-full w-[86%] max-w-sm panel glass border-l border-[rgba(15,23,42,.12)] p-6">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2 font-semibold text-ink">
+          <i data-lucide="clapperboard" class="text-primary"></i>
+          <span data-i18n="menu.title">MENU</span>
+        </div>
+        <button id="menuCloseBtn" class="w-11 h-11 rounded-xl bg-white/45 border border-[rgba(15,23,42,.12)] hover:border-[rgba(15,23,42,.18)] transition-colors"
+                aria-label="Close menu">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div class="mt-5">
+        <div class="seg w-full justify-center">
+          <button id="langEN_m" type="button" class="active w-1/2 justify-center">
+            <i data-lucide="globe" class="w-4 h-4 text-primary"></i> EN
+          </button>
+          <button id="langVI_m" type="button" class="w-1/2 justify-center">VI</button>
+        </div>
+      </div>
+
+      <div class="mt-6 flex flex-col gap-2 text-base">
+        <a class="px-4 py-3 rounded-xl bg-white/45 border border-[rgba(15,23,42,.12)] hover:border-primary/30 transition-colors" href="#home" data-i18n="nav.home">Home</a>
+        <a class="px-4 py-3 rounded-xl bg-white/45 border border-[rgba(15,23,42,.12)] hover:border-primary/30 transition-colors" href="#portfolio" data-i18n="nav.work">Work</a>
+        <a class="px-4 py-3 rounded-xl bg-white/45 border border-[rgba(15,23,42,.12)] hover:border-primary/30 transition-colors" href="#about" data-i18n="nav.about">About</a>
+        <a class="px-4 py-3 rounded-xl bg-white/45 border border-[rgba(15,23,42,.12)] hover:border-primary/30 transition-colors" href="#contact" data-i18n="nav.contact">Contact</a>
+
+        <a href="#contact" class="mt-3 inline-flex items-center justify-center px-5 py-3 rounded-xl text-white font-semibold transition-all lift btn-primary"
+           data-i18n="nav.hire">
+          Hire me
+        </a>
+      </div>
+
+      <div class="mt-8 text-sm text-softInk/70">
+        <p class="mb-2 font-semibold text-ink" data-i18n="menu.quick">Quick contact</p>
+        <div class="space-y-2">
+          <div class="flex items-center gap-2"><i data-lucide="mail" class="w-4 h-4"></i><span>contact@editor.com</span></div>
+          <div class="flex items-center gap-2"><i data-lucide="phone" class="w-4 h-4"></i><span>0909.xxx.xxx</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <header id="home" class="min-h-screen pt-28 md:pt-32 pb-16">
+    <div class="container mx-auto px-6">
+      <div class="grid lg:grid-cols-2 gap-10 items-center spotlight">
+        <div>
+          <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass text-sm text-ink"
+               data-animate data-delay="0">
+            <span class="w-2 h-2 rounded-full bg-primary"></span>
+            <span data-i18n="hero.pill">Short-form Video Editor • Motion • Sound</span>
+          </div>
+
+          <div class="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full glass-soft text-xs font-semibold text-ink border border-[rgba(15,23,42,.10)]"
+               data-animate data-delay="50" aria-live="polite">
+            <span class="relative inline-flex h-2.5 w-2.5">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary/40"></span>
+              <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary"></span>
+            </span>
+            <span data-i18n="ui.status">Available for new projects</span>
+          </div>
+
+          <h1 class="mt-6 text-4xl md:text-6xl font-semibold leading-tight tracking-tight text-ink"
+              data-animate data-delay="90">
+            <span data-i18n="hero.h1a">Apple-glass style,</span>
+            <br />
+            <span data-i18n="hero.h1b">smooth down to every</span>
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent" data-i18n="hero.h1c">frame</span>.
+          </h1>
+
+          <p class="mt-5 text-lg text-softInk/70 max-w-xl"
+             data-animate data-delay="160" data-i18n="hero.desc">
+            TikTok / Reels / Shorts — hooks in 3 seconds, pacing that holds attention, clean typography, satisfying sound design.
+          </p>
+
+          <div class="mt-8 flex flex-col sm:flex-row gap-3"
+               data-animate data-delay="230">
+            <a href="#portfolio"
+               class="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full text-white font-semibold transition-all lift btn-primary"
+               aria-label="View work">
+              <i data-lucide="play-circle" class="w-5 h-5"></i>
+              <span data-i18n="hero.cta1">View work</span>
+            </a>
+
+            <a href="#contact"
+               class="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full font-semibold transition-all lift btn-glass text-ink"
+               aria-label="Contact">
+              <i data-lucide="sparkles" class="w-5 h-5 text-primary"></i>
+              <span data-i18n="hero.cta2">Let’s collaborate</span>
+            </a>
+          </div>
+
+          <div class="mt-10 grid grid-cols-3 gap-3 max-w-lg"
+               data-animate data-delay="300">
+            <div class="glass rounded-2xl p-4 border border-[rgba(15,23,42,.10)]">
+              <div class="text-2xl font-semibold text-ink" data-counter="120">0</div>
+              <div class="text-xs text-softInk/65 mt-1" data-i18n="stats.videos">Videos delivered</div>
+            </div>
+            <div class="glass rounded-2xl p-4 border border-[rgba(15,23,42,.10)]">
+              <div class="text-2xl font-semibold text-ink"><span data-counter="3">0</span>+</div>
+              <div class="text-xs text-softInk/65 mt-1" data-i18n="stats.years">Years experience</div>
+            </div>
+            <div class="glass rounded-2xl p-4 border border-[rgba(15,23,42,.10)]">
+              <div class="text-2xl font-semibold text-ink" data-counter="48">0</div>
+              <div class="text-xs text-softInk/65 mt-1" data-i18n="stats.delivery">Avg. delivery (hrs)</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="relative" data-animate data-delay="260">
+          <div class="glass rounded-3xl p-6 md:p-8 border border-[rgba(15,23,42,.10)]">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2 text-sm text-softInk/70">
+                <i data-lucide="badge-check" class="w-5 h-5 text-primary"></i>
+                <span data-i18n="hero.cardTop">International-ready workflow</span>
+              </div>
+              <div class="text-xs text-softInk/60">DaVinci / AE / PR</div>
+            </div>
+
+            <div class="mt-6 rounded-2xl overflow-hidden border border-[rgba(15,23,42,.10)] bg-white/35">
+              <div class="aspect-video relative">
+                <div class="absolute inset-0 bg-gradient-to-br from-primary/12 via-white/10 to-accent/10"></div>
+
+                <div class="absolute inset-0 flex items-center justify-center">
+                  <button class="w-16 h-16 rounded-full bg-white/55 border border-[rgba(15,23,42,.12)] hover:border-primary/30 transition-all lift flex items-center justify-center"
+                          onclick="openModal({id:'showreel'})" aria-label="Open showreel">
+                    <i data-lucide="play" class="w-7 h-7 text-ink"></i>
+                  </button>
+                </div>
+
+                <div class="absolute bottom-0 left-0 right-0 p-5">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <div class="text-sm font-semibold text-ink" data-i18n="hero.showreelTitle">Showreel / Highlights</div>
+                      <div class="text-xs text-softInk/65 mt-1" data-i18n="hero.showreelSub">Hook • Pacing • Sound • Typography</div>
+                    </div>
+                    <div class="text-xs text-softInk/60">00:30</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-6 grid sm:grid-cols-2 gap-4">
+              <div class="rounded-2xl p-4 bg-white/45 border border-[rgba(15,23,42,.10)] lift">
+                <div class="flex items-center gap-2 font-semibold text-ink">
+                  <i data-lucide="zap" class="w-5 h-5 text-primary"></i>
+                  <span data-i18n="hero.p1t">Speed & consistency</span>
+                </div>
+                <p class="text-sm text-softInk/70 mt-2" data-i18n="hero.p1d">Template system + QA checklist — fewer mistakes, on-time delivery.</p>
+              </div>
+
+              <div class="rounded-2xl p-4 bg-white/45 border border-[rgba(15,23,42,.10)] lift">
+                <div class="flex items-center gap-2 font-semibold text-ink">
+                  <i data-lucide="audio-lines" class="w-5 h-5 text-primary"></i>
+                  <span data-i18n="hero.p2t">Sound design</span>
+                </div>
+                <p class="text-sm text-softInk/70 mt-2" data-i18n="hero.p2d">Layered impacts, ambience and whooshes for addictive rhythm.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="absolute -bottom-5 -left-4 hidden md:block">
+            <div class="glass rounded-2xl px-4 py-3 border border-[rgba(15,23,42,.10)] flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center text-primary">
+                <i data-lucide="sparkles"></i>
+              </div>
+              <div>
+                <div class="text-sm font-semibold text-ink" data-i18n="hero.badge1">Glass • Minimal • Premium</div>
+                <div class="text-xs text-softInk/65" data-i18n="hero.badge2">Subtle motion • clean layout</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="mt-14 flex items-center justify-center text-softInk/60" data-animate data-delay="360">
+        <div class="inline-flex items-center gap-2 text-sm glass px-4 py-2 rounded-full border border-[rgba(15,23,42,.10)]">
+          <i data-lucide="mouse" class="w-4 h-4"></i>
+          <span data-i18n="hero.scroll">Scroll to explore</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- TOOLS -->
+  <section class="border-y border-[rgba(15,23,42,.10)] bg-white/25">
+    <div class="container mx-auto px-6 py-10">
+      <div class="flex flex-wrap justify-center gap-8 md:gap-14 items-center text-softInk/70" data-animate>
+        <span class="text-lg font-semibold flex items-center gap-2"><i data-lucide="scissors" class="text-primary"></i> Premiere Pro</span>
+        <span class="text-lg font-semibold flex items-center gap-2"><i data-lucide="zap" class="text-accent"></i> After Effects</span>
+        <span class="text-lg font-semibold flex items-center gap-2"><i data-lucide="aperture" class="text-ink"></i> DaVinci Resolve</span>
+        <span class="text-lg font-semibold flex items-center gap-2"><i data-lucide="music" class="text-primary"></i> Audition</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- PORTFOLIO -->
+  <section id="portfolio" class="py-24">
+    <div class="container mx-auto px-6">
+      <div class="text-center mb-10" data-animate>
+        <h2 class="text-3xl md:text-5xl font-semibold text-ink" data-i18n="work.title">Work</h2>
+        <div class="w-20 h-1 bg-primary mx-auto rounded-full mt-4"></div>
+        <p class="text-softInk/70 mt-4" data-i18n="work.subtitle">Pick a category to preview my editing style. Replace the video links anytime.</p>
+      </div>
+
+      <!-- sticky sentinel -->
+      <div id="filterSentinel" class="h-[1px]"></div>
+
+      <!-- Sticky filter bar -->
+      <div id="filterBar" class="mb-8" data-animate data-delay="80">
+        <div class="bar glass rounded-2xl border border-[rgba(15,23,42,.10)] px-4 md:px-5 py-3 flex flex-col md:flex-row md:items-center gap-3 md:gap-4">
+          <div class="flex items-center gap-2 text-ink font-semibold">
+            <i data-lucide="sliders-horizontal" class="w-5 h-5 text-primary"></i>
+            <span data-i18n="work.filters">Filters</span>
+          </div>
+          <div class="flex flex-wrap items-center gap-2" id="filters"></div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="portfolio-grid" aria-live="polite"></div>
+
+      <div class="mt-14 text-center" data-animate data-delay="120">
+        <a href="#" class="inline-flex items-center gap-2 text-primary hover:text-ink transition-colors border-b border-primary/60 hover:border-ink pb-1">
+          <span data-i18n="work.more">See more on Drive</span>
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about" class="py-24 border-y border-[rgba(15,23,42,.10)] bg-white/22">
+    <div class="container mx-auto px-6">
+      <div class="grid md:grid-cols-2 gap-12 items-center">
+        <div data-animate>
+          <div class="relative w-full max-w-md mx-auto aspect-square rounded-3xl overflow-hidden border border-[rgba(15,23,42,.10)] glass">
+            <div class="absolute inset-0 bg-gradient-to-tr from-primary/10 via-white/5 to-accent/8"></div>
+            <div class="w-full h-full flex items-center justify-center text-softInk/40">
+              <i data-lucide="user" class="w-28 h-28 opacity-40"></i>
+            </div>
+          </div>
+        </div>
+
+        <div data-animate data-delay="90">
+          <h2 class="text-3xl md:text-4xl font-semibold leading-tight text-ink">
+            <span data-i18n="about.h1a">Not just cutting clips —</span>
+            <br/>
+            <span data-i18n="about.h1b">I tell stories with</span>
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent" data-i18n="about.h1c">emotion</span>.
+          </h2>
+
+          <p class="text-softInk/70 mt-5 leading-relaxed" data-i18n="about.desc">
+            I focus on intentional motion: cuts, rhythm, typography and sound cues that keep viewers watching.
+            The goal is clean, premium, mobile-first edits that improve retention.
+          </p>
+
+          <ul class="mt-6 space-y-3 text-softInk/80">
+            <li class="flex items-start gap-3">
+              <span class="mt-2 w-2 h-2 rounded-full bg-primary"></span>
+              <span data-i18n="about.b1">Hooks & pacing tuned for short-form</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="mt-2 w-2 h-2 rounded-full bg-primary"></span>
+              <span data-i18n="about.b2">Readable, rhythm-perfect captions</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="mt-2 w-2 h-2 rounded-full bg-primary"></span>
+              <span data-i18n="about.b3">Tasteful sound design (impact / ambience / whoosh)</span>
+            </li>
+          </ul>
+
+          <div class="mt-8 grid sm:grid-cols-2 gap-4">
+            <div class="p-5 rounded-2xl glass border border-[rgba(15,23,42,.10)] lift">
+              <div class="flex items-center gap-2 font-semibold text-ink">
+                <i data-lucide="film" class="w-5 h-5 text-primary"></i>
+                <span data-i18n="about.c1t">Short-form editing</span>
+              </div>
+              <p class="mt-2 text-sm text-softInk/70" data-i18n="about.c1d">Cuts, pacing, captions, b-roll, CTA — optimized for retention.</p>
+            </div>
+            <div class="p-5 rounded-2xl glass border border-[rgba(15,23,42,.10)] lift">
+              <div class="flex items-center gap-2 font-semibold text-ink">
+                <i data-lucide="sparkles" class="w-5 h-5 text-primary"></i>
+                <span data-i18n="about.c2t">Light motion & VFX</span>
+              </div>
+              <p class="mt-2 text-sm text-softInk/70" data-i18n="about.c2d">Tracking, transitions, masking, kinetic typography — clean and modern.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact" class="py-24">
+    <div class="container mx-auto px-6 text-center">
+      <div class="max-w-3xl mx-auto" data-animate>
+        <h2 class="text-4xl md:text-6xl font-semibold text-ink" data-i18n="contact.title">Contact</h2>
+        <p class="text-lg md:text-xl text-softInk/70 mt-5" data-i18n="contact.subtitle">
+          Send your brief — I’ll reply fast with timeline, pricing, and editing direction.
+        </p>
+
+        <div class="grid md:grid-cols-3 gap-6 mt-10">
+          <a class="p-6 rounded-2xl glass border border-[rgba(15,23,42,.10)] lift" href="mailto:contact@editor.com">
+            <div class="w-12 h-12 bg-primary/12 rounded-full flex items-center justify-center mx-auto mb-4 text-primary">
+              <i data-lucide="mail"></i>
+            </div>
+            <h3 class="font-semibold text-ink" data-i18n="contact.email">Email</h3>
+            <p class="text-softInk/70 text-sm mt-1">contact@editor.com</p>
+          </a>
+
+          <a class="p-6 rounded-2xl glass border border-[rgba(15,23,42,.10)] lift" href="#" onclick="alert(currentLang==='en'?'Replace with your Facebook link.':'Hãy thay link Facebook của bạn vào đây!')">
+            <div class="w-12 h-12 bg-primary/12 rounded-full flex items-center justify-center mx-auto mb-4 text-primary">
+              <i data-lucide="facebook"></i>
+            </div>
+            <h3 class="font-semibold text-ink" data-i18n="contact.fb">Facebook</h3>
+            <p class="text-softInk/70 text-sm mt-1">fb.com/editorvn</p>
+          </a>
+
+          <a class="p-6 rounded-2xl glass border border-[rgba(15,23,42,.10)] lift" href="#" onclick="alert(currentLang==='en'?'Replace with your Zalo/Hotline.':'Hãy thay số Zalo/Hotline của bạn vào đây!')">
+            <div class="w-12 h-12 bg-primary/12 rounded-full flex items-center justify-center mx-auto mb-4 text-primary">
+              <i data-lucide="phone"></i>
+            </div>
+            <h3 class="font-semibold text-ink" data-i18n="contact.phone">Hotline / Zalo</h3>
+            <p class="text-softInk/70 text-sm mt-1">0909.xxx.xxx</p>
+          </a>
+        </div>
+
+        <form class="mt-10 text-left glass p-7 md:p-8 rounded-3xl border border-[rgba(15,23,42,.10)]"
+              id="contactForm">
+          <div class="grid md:grid-cols-2 gap-5 mb-5">
+            <div>
+              <label class="block text-sm font-medium mb-2 text-softInk/75" data-i18n="form.nameLabel">Your name</label>
+              <input id="name" type="text"
+                     class="w-full bg-white/55 border border-[rgba(15,23,42,.10)] rounded-xl px-4 py-3.5 text-ink placeholder:text-softInk/40 focus:border-primary/30 transition-colors"
+                     data-i18n-placeholder="form.namePh" placeholder="John Doe" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2 text-softInk/75" data-i18n="form.emailLabel">Email</label>
+              <input id="email" type="email"
+                     class="w-full bg-white/55 border border-[rgba(15,23,42,.10)] rounded-xl px-4 py-3.5 text-ink placeholder:text-softInk/40 focus:border-primary/30 transition-colors"
+                     data-i18n-placeholder="form.emailPh" placeholder="example@gmail.com" />
+            </div>
+          </div>
+
+          <div class="mb-6">
+            <label class="block text-sm font-medium mb-2 text-softInk/75" data-i18n="form.msgLabel">Project details</label>
+            <textarea id="message" rows="5"
+                      class="w-full bg-white/55 border border-[rgba(15,23,42,.10)] rounded-xl px-4 py-3.5 text-ink placeholder:text-softInk/40 focus:border-primary/30 transition-colors"
+                      data-i18n-placeholder="form.msgPh"
+                      placeholder="I need a TikTok edit for fashion... (share references if any)"></textarea>
+          </div>
+
+          <button type="submit"
+                  class="w-full py-4 rounded-xl text-white font-semibold transition-all lift btn-primary"
+                  data-i18n="form.submit">
+            Send message
+          </button>
+
+          <p class="text-xs text-softInk/60 mt-3 text-center" data-i18n="form.tip">
+            This button opens mailto. Swap it with Google Form / Telegram / Zalo if needed.
+          </p>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <footer class="border-t border-[rgba(15,23,42,.10)] py-8 text-center text-softInk/60 text-sm bg-white/15">
+    <div class="container mx-auto px-6">
+      <p data-i18n="footer.copy">&copy; 2026 Cuong Edit Portfolio. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- MODAL -->
+  <div id="video-modal" class="fixed inset-0 z-[80] hidden items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/25 backdrop-blur-sm modal-backdrop" id="modal-backdrop"></div>
+
+    <div class="relative w-full max-w-5xl rounded-3xl overflow-hidden border border-[rgba(15,23,42,.12)] bg-white/60 glass modal-box"
+         id="modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="flex items-center justify-between px-5 md:px-6 py-4 border-b border-[rgba(15,23,42,.10)]">
+        <div class="flex items-center gap-2 text-ink">
+          <i data-lucide="play" class="w-5 h-5 text-primary"></i>
+          <h3 class="text-base md:text-lg font-semibold" id="modal-title">Project</h3>
+        </div>
+        <button id="modal-close"
+                class="p-2 rounded-xl bg-white/55 border border-[rgba(15,23,42,.10)] hover:border-[rgba(15,23,42,.16)] transition-colors"
+                aria-label="Close">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="bg-white/35">
+        <div class="aspect-video w-full bg-white/45 flex items-center justify-center" id="modal-body"></div>
+
+        <div class="p-5 md:p-6 text-left">
+          <p class="text-softInk/75 text-sm md:text-base" id="modal-desc"></p>
+          <div class="mt-4 flex flex-wrap gap-2 text-xs" id="modal-tags"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    // ===== Helpers =====
+    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const qs = (sel, parent=document) => parent.querySelector(sel);
+    const qsa = (sel, parent=document) => Array.from(parent.querySelectorAll(sel));
+
+    // ===== i18n =====
+    const I18N = {
+      en: {
+        a11y: { skip: "Skip to work" },
+        nav: { home:"Home", work:"Work", about:"About", contact:"Contact", hire:"Hire me" },
+        menu: { title:"MENU", quick:"Quick contact" },
+        ui: { status:"Available for new projects" },
+        hero: {
+          pill:"Short-form Video Editor • Motion • Sound",
+          h1a:"Apple-glass style,", h1b:"smooth down to every ", h1c:"frame",
+          desc:"TikTok / Reels / Shorts — hooks in 3 seconds, pacing that holds attention, clean typography, satisfying sound design.",
+          cta1:"View work", cta2:"Let’s collaborate",
+          cardTop:"International-ready workflow",
+          showreelTitle:"Showreel / Highlights",
+          showreelSub:"Hook • Pacing • Sound • Typography",
+          p1t:"Speed & consistency", p1d:"Template system + QA checklist — fewer mistakes, on-time delivery.",
+          p2t:"Sound design", p2d:"Layered impacts, ambience and whooshes for addictive rhythm.",
+          badge1:"Glass • Minimal • Premium",
+          badge2:"Subtle motion • clean layout",
+          scroll:"Scroll to explore"
+        },
+        stats: { videos:"Videos delivered", years:"Years experience", delivery:"Avg. delivery (hrs)" },
+        work: {
+          title:"Work",
+          subtitle:"Pick a category to preview my editing style. Replace the video links anytime.",
+          more:"See more on Drive",
+          filters:"Filters",
+          open:"Open"
+        },
+        about: {
+          h1a:"Not just cutting clips —", h1b:"I tell stories with ", h1c:"emotion",
+          desc:"I focus on intentional motion: cuts, rhythm, typography and sound cues that keep viewers watching. The goal is clean, premium, mobile-first edits that improve retention.",
+          b1:"Hooks & pacing tuned for short-form",
+          b2:"Readable, rhythm-perfect captions",
+          b3:"Tasteful sound design (impact / ambience / whoosh)",
+          c1t:"Short-form editing",
+          c1d:"Cuts, pacing, captions, b-roll, CTA — optimized for retention.",
+          c2t:"Light motion & VFX",
+          c2d:"Tracking, transitions, masking, kinetic typography — clean and modern."
+        },
+        contact: {
+          title:"Contact",
+          subtitle:"Send your brief — I’ll reply fast with timeline, pricing, and editing direction.",
+          email:"Email", fb:"Facebook", phone:"Hotline / Zalo"
+        },
+        form: {
+          nameLabel:"Your name", emailLabel:"Email", msgLabel:"Project details",
+          namePh:"John Doe", emailPh:"example@gmail.com", msgPh:"I need a TikTok edit for fashion... (share references if any)",
+          submit:"Send message",
+          tip:"This button opens mailto. Swap it with Google Form / Telegram / Zalo if needed."
+        },
+        footer: { copy:"© 2026 Cuong Edit Portfolio. All rights reserved." },
+        types: { all:"All", fashion:"Fashion", travel:"Travel", food:"Food", gaming:"Gaming", ads:"Ads", event:"Event", talking:"Talking-head", lifestyle:"Lifestyle" },
+        modal: {
+          showreelTitle:"Showreel 2026 (Demo)",
+          withUrl:"Video is embedded — replace the YouTube/Vimeo URL in the data to play your real video.",
+          noUrl:"No video URL yet. Add a YouTube/Vimeo link to play inside this modal.",
+          placeholderTitle:"Demo placeholder",
+          placeholderDesc:"Replace the project's URL with a YouTube/Vimeo link to play the real video."
+        }
+      },
+      vi: {
+        a11y: { skip: "Tới phần sản phẩm" },
+        nav: { home:"Trang chủ", work:"Sản phẩm", about:"Giới thiệu", contact:"Liên hệ", hire:"Thuê tôi ngay" },
+        menu: { title:"MENU", quick:"Liên hệ nhanh" },
+        ui: { status:"Đang nhận dự án mới" },
+        hero: {
+          pill:"Video Editor • Motion • Sound",
+          h1a:"Phong cách Apple Glass,", h1b:"mượt mà tới từng ", h1c:"khung hình",
+          desc:"TikTok / Reels / Shorts — hook 3 giây đầu, pacing giữ chân, typography sạch, sound design “đã tai”.",
+          cta1:"Xem demo", cta2:"Liên hệ hợp tác",
+          cardTop:"Workflow chuẩn quốc tế",
+          showreelTitle:"Showreel / Highlights",
+          showreelSub:"Hook • Pacing • Sound • Typography",
+          p1t:"Nhanh & ổn định", p1d:"Template + checklist QA — ít lỗi vặt, giao đúng hẹn.",
+          p2t:"Sound design", p2d:"Layering impact/ambience/whoosh để nhịp video “dính” hơn.",
+          badge1:"Glass • Minimal • Premium",
+          badge2:"Chuyển động tinh tế • layout sạch",
+          scroll:"Kéo xuống để xem thêm"
+        },
+        stats: { videos:"Video đã bàn giao", years:"Năm kinh nghiệm", delivery:"Thời gian giao (giờ)" },
+        work: {
+          title:"Sản phẩm",
+          subtitle:"Chọn danh mục để xem demo. Bạn có thể thay link video thật bất cứ lúc nào.",
+          more:"Xem thêm trên Drive",
+          filters:"Bộ lọc",
+          open:"Mở"
+        },
+        about: {
+          h1a:"Không chỉ là cắt ghép —", h1b:"tôi kể chuyện bằng ", h1c:"cảm xúc",
+          desc:"Mình tập trung vào “chuyển động có chủ đích”: nhịp cắt, typography, và cue âm thanh để giữ chân người xem. Mục tiêu: edit sạch, premium, tối ưu cho mobile và tăng retention thật.",
+          b1:"Hook & pacing đúng “gu” short-form",
+          b2:"Caption dễ đọc, đúng nhịp nói",
+          b3:"Sound design tinh tế (impact / ambience / whoosh)",
+          c1t:"Dựng short-form",
+          c1d:"Cut, pacing, sub, b-roll, CTA — tối ưu retention.",
+          c2t:"Motion & VFX nhẹ",
+          c2d:"Tracking, transitions, masking, kinetic typography — sạch và hiện đại."
+        },
+        contact: {
+          title:"Liên hệ",
+          subtitle:"Gửi brief — mình phản hồi nhanh, rõ timeline + chi phí + định hướng edit.",
+          email:"Email", fb:"Facebook", phone:"Hotline / Zalo"
+        },
+        form: {
+          nameLabel:"Tên của bạn", emailLabel:"Email", msgLabel:"Nội dung cần tư vấn",
+          namePh:"Nguyễn Văn A", emailPh:"example@gmail.com", msgPh:"Mình cần edit video TikTok về... (gửi link mẫu nếu có)",
+          submit:"Gửi tin nhắn",
+          tip:"Nút này đang mở mailto. Bạn có thể đổi sang Google Form / Telegram / Zalo."
+        },
+        footer: { copy:"© 2026 Cuong Edit Portfolio. All rights reserved." },
+        types: { all:"Tất cả", fashion:"Thời trang", travel:"Du lịch", food:"Ẩm thực", gaming:"Gaming", ads:"Quảng cáo", event:"Sự kiện", talking:"Talking-head", lifestyle:"Lifestyle" },
+        modal: {
+          showreelTitle:"Showreel 2026 (Demo)",
+          withUrl:"Video đang được nhúng — thay URL YouTube/Vimeo trong data là phát video thật ngay.",
+          noUrl:"Chưa có link video. Thêm URL YouTube/Vimeo để phát video trong modal.",
+          placeholderTitle:"Demo Placeholder",
+          placeholderDesc:"Thay URL của project bằng link YouTube/Vimeo để phát video thật."
+        }
+      }
+    };
+
+    let currentLang = localStorage.getItem("lang") || "en";
+
+    function deepGet(obj, path){
+      return path.split(".").reduce((acc,k)=> (acc && acc[k]!==undefined) ? acc[k] : undefined, obj);
+    }
+
+    function applyLang(lang){
+      currentLang = lang;
+      document.documentElement.lang = lang === "vi" ? "vi" : "en";
+      localStorage.setItem("lang", lang);
+
+      // Text nodes
+      qsa("[data-i18n]").forEach(el=>{
+        const key = el.getAttribute("data-i18n");
+        const val = deepGet(I18N[lang], key);
+        if(typeof val === "string") el.textContent = val;
+      });
+
+      // Placeholders
+      qsa("[data-i18n-placeholder]").forEach(el=>{
+        const key = el.getAttribute("data-i18n-placeholder");
+        const val = deepGet(I18N[lang], key);
+        if(typeof val === "string") el.setAttribute("placeholder", val);
+      });
+
+      // Toggle UI state
+      const setActive = (btn, isOn) => btn && btn.classList.toggle("active", !!isOn);
+      setActive(qs("#langEN"), lang==="en");
+      setActive(qs("#langVI"), lang==="vi");
+      setActive(qs("#langEN_m"), lang==="en");
+      setActive(qs("#langVI_m"), lang==="vi");
+
+      // Re-render portfolio labels
+      renderFilters();
+      renderGrid({withSkeleton:false});
+      lucide.createIcons();
+    }
+
+    // ===== Mobile menu =====
+    const menuBtn = qs("#menuBtn");
+    const menuOverlay = qs("#menuOverlay");
+    const panel = qs(".panel", menuOverlay);
+    const menuCloseBtn = qs("#menuCloseBtn");
+
+    function openMenu(){
+      menuOverlay.classList.remove("hidden");
+      requestAnimationFrame(()=> panel.classList.add("open"));
+      menuBtn?.setAttribute("aria-expanded","true");
+      document.body.style.overflow = "hidden";
+    }
+    function closeMenu(){
+      panel.classList.remove("open");
+      menuBtn?.setAttribute("aria-expanded","false");
+      setTimeout(()=>{
+        menuOverlay.classList.add("hidden");
+        document.body.style.overflow = "";
+      }, 300);
+    }
+    menuBtn?.addEventListener("click", openMenu);
+    menuCloseBtn?.addEventListener("click", closeMenu);
+    menuOverlay?.addEventListener("click", (e)=>{
+      if(e.target === menuOverlay || e.target === menuOverlay.firstElementChild) closeMenu();
+    });
+    qsa("a[href^='#']", panel).forEach(a => a.addEventListener("click", closeMenu));
+
+    // Language buttons
+    qs("#langEN")?.addEventListener("click", ()=> applyLang("en"));
+    qs("#langVI")?.addEventListener("click", ()=> applyLang("vi"));
+    qs("#langEN_m")?.addEventListener("click", ()=> applyLang("en"));
+    qs("#langVI_m")?.addEventListener("click", ()=> applyLang("vi"));
+
+    // ===== WAAPI reveal animations =====
+    function animateIn(el){
+      if(prefersReduced) {
+        el.style.opacity = "1";
+        el.style.transform = "none";
+        return;
+      }
+      const delay = Number(el.getAttribute("data-delay") || 0);
+      el.animate(
+        [
+          { opacity: 0, transform: "translateY(18px) scale(.992)", filter: "blur(7px)" },
+          { opacity: 1, transform: "translateY(0) scale(1)", filter: "blur(0px)" }
+        ],
+        { duration: 1200, delay, easing: "cubic-bezier(.16, 1, .3, 1)", fill: "forwards" }
+      );
+    }
+
+    const io = new IntersectionObserver((entries, obs)=>{
+      entries.forEach(entry=>{
+        if(entry.isIntersecting){
+          animateIn(entry.target);
+          obs.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.10, rootMargin: "0px 0px -60px 0px" });
+
+    function observeNewAnimations(scope=document){
+      const els = qsa("[data-animate]", scope);
+      els.forEach(el => io.observe(el));
+
+      // Fallback: animate immediately if already in viewport
+      requestAnimationFrame(()=>{
+        els.forEach(el=>{
+          const r = el.getBoundingClientRect();
+          const inView = r.top < (window.innerHeight * 0.92) && r.bottom > 0;
+          if(inView){
+            animateIn(el);
+            try { io.unobserve(el); } catch(e) {}
+          }
+        });
+      });
+    }
+    observeNewAnimations(document);
+
+    // ===== Counters =====
+    function animateCounter(el){
+      if(prefersReduced) { el.textContent = el.getAttribute("data-counter"); return; }
+      const to = Number(el.getAttribute("data-counter") || 0);
+      const dur = 1100;
+      const start = performance.now();
+
+      function tick(now){
+        const t = Math.min(1, (now - start) / dur);
+        const eased = 1 - Math.pow(1 - t, 3);
+        el.textContent = String(Math.round(to * eased));
+        if(t < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    }
+
+    const counterIO = new IntersectionObserver((entries, obs)=>{
+      entries.forEach(entry=>{
+        if(entry.isIntersecting){
+          animateCounter(entry.target);
+          obs.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.45 });
+
+    qsa("[data-counter]").forEach(el => counterIO.observe(el));
+
+    // ===== Portfolio =====
+    const projects = [
+      { id: 1, typeKey: "fashion", title:{en:"Fashion TikTok — Hook & Pacing", vi:"TikTok Thời trang — Hook & Pacing"}, tags:{en:["Hook","Typography","Speed ramp"], vi:["Hook","Typography","Speed ramp"]}, url:"" },
+      { id: 2, typeKey: "travel", title:{en:"Travel Reels — Clean Cinematic", vi:"Reels Du lịch — Cinematic sạch"}, tags:{en:["Cinematic","Color","SFX"], vi:["Cinematic","Color","SFX"]}, url:"" },
+      { id: 3, typeKey: "food", title:{en:"Food Review — Sound Design", vi:"Review Ẩm thực — Sound design"}, tags:{en:["Sound","Impact","Captions"], vi:["Sound","Impact","Captions"]}, url:"" },
+      { id: 4, typeKey: "gaming", title:{en:"Gaming Highlight — Beat-sync", vi:"Highlight Gaming — Beat-sync"}, tags:{en:["Beat-sync","Light VFX","Zoom"], vi:["Beat-sync","VFX nhẹ","Zoom"]}, url:"" },
+      { id: 5, typeKey: "ads", title:{en:"Product Ad — Minimal Motion", vi:"Quảng cáo SP — Motion tối giản"}, tags:{en:["Motion","CTA","Branding"], vi:["Motion","CTA","Branding"]}, url:"" },
+      { id: 6, typeKey: "event", title:{en:"Event Recap — Dynamic", vi:"Recap Sự kiện — Năng lượng"}, tags:{en:["Fast cuts","Transitions","Energy"], vi:["Cắt nhanh","Transition","Năng lượng"]}, url:"" },
+      { id: 7, typeKey: "talking", title:{en:"Talking-head — Pro Captions", vi:"Talking-head — Caption chuẩn"}, tags:{en:["Captions","Pacing","Retention"], vi:["Caption","Pacing","Retention"]}, url:"" },
+      { id: 8, typeKey: "talking", title:{en:"Podcast Clip — Viral Style", vi:"Podcast Clip — Viral style"}, tags:{en:["Hook","Captions","Punch-in"], vi:["Hook","Caption","Punch-in"]}, url:"" },
+      { id: 9, typeKey: "fashion", title:{en:"Beauty Reels — Premium Soft", vi:"Beauty Reels — Premium soft"}, tags:{en:["Soft glow","Color","SFX"], vi:["Soft glow","Color","SFX"]}, url:"" },
+      { id: 10, typeKey: "lifestyle", title:{en:"Gym Shorts — Clean Punch", vi:"Gym Shorts — Nhịp chắc"}, tags:{en:["Beat-sync","Impact","Speed"], vi:["Beat-sync","Impact","Speed"]}, url:"" },
+      { id: 11, typeKey: "ads", title:{en:"Real Estate — Trust & Clean", vi:"BĐS — Tin cậy & sạch"}, tags:{en:["Clean","B-roll","Lower thirds"], vi:["Clean","B-roll","Lower third"]}, url:"" },
+      { id: 12, typeKey: "travel", title:{en:"Travel — Storytelling", vi:"Du lịch — Storytelling"}, tags:{en:["Story","Pacing","Music"], vi:["Story","Pacing","Music"]}, url:"" },
+    ];
+
+    const typeKeys = Array.from(new Set(projects.map(p=>p.typeKey)));
+    const filtersWrap = qs("#filters");
+    const grid = qs("#portfolio-grid");
+    let currentFilter = "all";
+
+    function typeLabel(key){
+      return (I18N[currentLang] && I18N[currentLang].types && I18N[currentLang].types[key]) ? I18N[currentLang].types[key] : key;
+    }
+
+    function renderFilters(){
+      const keys = ["all", ...typeKeys];
+      filtersWrap.innerHTML = keys.map(k=>{
+        const active = k === currentFilter;
+        const label = typeLabel(k);
+        return `
+          <button class="px-4 py-2 rounded-full text-sm font-semibold border transition-colors lift min-h-[44px]
+            ${active
+              ? "text-white border-transparent btn-primary"
+              : "bg-white/55 border-[rgba(15,23,42,.10)] text-ink hover:border-primary/25"}"
+            data-filter="${k}">
+            ${label}
+          </button>
+        `;
+      }).join("");
+    }
+
+    function renderSkeleton(count=8){
+      grid.innerHTML = Array.from({length: count}).map(()=>`
+        <div class="skeleton"></div>
+      `).join("");
+    }
+
+    function renderGrid(opts={withSkeleton:true}){
+      const list = currentFilter === "all"
+        ? projects
+        : projects.filter(p=>p.typeKey === currentFilter);
+
+      const paint = ()=>{
+        grid.innerHTML = list.map((p, idx)=>{
+          const delay = Math.min(360, idx * 70);
+          const title = (p.title && p.title[currentLang]) ? p.title[currentLang] : p.title.en;
+          const tags = (p.tags && p.tags[currentLang]) ? p.tags[currentLang] : p.tags.en;
+          const openLabel = I18N[currentLang].work.open;
+
+          return `
+            <article class="group relative rounded-3xl overflow-hidden glass border border-[rgba(15,23,42,.10)] lift cursor-pointer"
+                     data-animate data-delay="${delay}"
+                     role="button"
+                     tabindex="0"
+                     aria-label="${title}"
+                     data-project-id="${p.id}">
+              <div class="aspect-[3/4] w-full relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-br from-primary/10 via-white/10 to-accent/10"></div>
+
+                <div class="absolute -top-12 -right-14 w-40 h-40 rounded-full bg-primary/18 blur-3xl"></div>
+                <div class="absolute -bottom-10 -left-10 w-40 h-40 rounded-full bg-accent/14 blur-3xl"></div>
+
+                <div class="absolute top-4 left-4 text-4xl font-semibold text-ink/10 select-none">
+                  ${String(p.id).padStart(2,'0')}
+                </div>
+
+                <div class="absolute inset-0 flex items-center justify-center">
+                  <div class="w-16 h-16 rounded-full bg-white/60 border border-[rgba(15,23,42,.10)] group-hover:border-primary/25 transition-colors flex items-center justify-center">
+                    <i data-lucide="play" class="w-7 h-7 text-ink"></i>
+                  </div>
+                </div>
+
+                <div class="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-white/92 via-white/60 to-transparent">
+                  <div class="text-xs font-bold text-primary uppercase tracking-wider">${typeLabel(p.typeKey)}</div>
+                  <div class="text-lg font-semibold mt-1 text-ink">${title}</div>
+                  <div class="text-sm text-softInk/70 mt-1 clamp-2">${tags.join(" • ")}</div>
+                </div>
+
+                <!-- Quick preview drawer (desktop) -->
+                <div class="drawer absolute left-4 right-4 bottom-4">
+                  <div class="glass-soft rounded-2xl border border-[rgba(15,23,42,.10)] p-3 flex items-center justify-between">
+                    <div class="text-xs text-softInk/70">${tags.slice(0,2).join(" • ")}</div>
+                    <button class="px-3 py-2 rounded-xl text-white font-semibold btn-primary min-h-[44px]" data-open="${p.id}">
+                      ${openLabel}
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+            </article>
+          `;
+        }).join("");
+
+        lucide.createIcons();
+        observeNewAnimations(grid);
+      };
+
+      if(opts.withSkeleton && !prefersReduced){
+        renderSkeleton(Math.max(8, Math.min(12, list.length)));
+        setTimeout(paint, 280);
+      }else{
+        paint();
+      }
+    }
+
+    filtersWrap.addEventListener("click", (e)=>{
+      const btn = e.target.closest("button[data-filter]");
+      if(!btn) return;
+      currentFilter = btn.getAttribute("data-filter");
+      renderFilters();
+      renderGrid({withSkeleton:true});
+    });
+
+    // Card click / keyboard open
+    grid.addEventListener("click", (e)=>{
+      const openBtn = e.target.closest("button[data-open]");
+      const card = e.target.closest("[data-project-id]");
+      if(openBtn){
+        const id = Number(openBtn.getAttribute("data-open"));
+        openModal({id});
+        e.stopPropagation();
+        return;
+      }
+      if(card){
+        const id = Number(card.getAttribute("data-project-id"));
+        openModal({id});
+      }
+    });
+
+    grid.addEventListener("keydown", (e)=>{
+      if(e.key !== "Enter" && e.key !== " ") return;
+      const card = e.target.closest("[data-project-id]");
+      if(card){
+        e.preventDefault();
+        const id = Number(card.getAttribute("data-project-id"));
+        openModal({id});
+      }
+    });
+
+    renderFilters();
+    renderGrid({withSkeleton:false});
+
+    // ===== Sticky filter bar "stuck" state =====
+    const filterBar = qs("#filterBar");
+    const sentinel = qs("#filterSentinel");
+
+    const stickIO = new IntersectionObserver((entries)=>{
+      entries.forEach(entry=>{
+        filterBar.classList.toggle("stuck", !entry.isIntersecting);
+      });
+    }, { threshold: 0.01 });
+
+    stickIO.observe(sentinel);
+
+    // ===== Modal logic =====
+    const modal = qs("#video-modal");
+    const backdrop = qs("#modal-backdrop");
+    const box = qs("#modal-box");
+    const closeBtn = qs("#modal-close");
+    const modalTitle = qs("#modal-title");
+    const modalBody = qs("#modal-body");
+    const modalDesc = qs("#modal-desc");
+    const modalTags = qs("#modal-tags");
+
+    function getProjectById(id){
+      return projects.find(p => p.id === id);
+    }
+
+    function toEmbed(url){
+      if(!url) return "";
+      try{
+        const u = new URL(url);
+        const host = u.hostname.replace("www.","");
+        if(host.includes("youtu.be")){
+          const id = u.pathname.replace("/","");
+          return `https://www.youtube.com/embed/${id}`;
+        }
+        if(host.includes("youtube.com")){
+          const id = u.searchParams.get("v");
+          if(id) return `https://www.youtube.com/embed/${id}`;
+        }
+        if(host.includes("vimeo.com")){
+          const id = u.pathname.split("/").filter(Boolean)[0];
+          if(id) return `https://player.vimeo.com/video/${id}`;
+        }
+      }catch(e){}
+      return "";
+    }
+
+    window.openModal = function(payload){
+      let title = "";
+      let url = "";
+      let tags = [];
+
+      if(payload && payload.id === "showreel"){
+        title = I18N[currentLang].modal.showreelTitle;
+        url = "";
+        tags = ["Hook","Pacing","Sound","Typography"];
+      } else {
+        const p = getProjectById(payload.id);
+        if(p){
+          title = (p.title && p.title[currentLang]) ? p.title[currentLang] : p.title.en;
+          url = p.url || "";
+          tags = (p.tags && p.tags[currentLang]) ? p.tags[currentLang] : p.tags.en;
+        } else {
+          title = "Project";
+        }
+      }
+
+      modalTitle.textContent = title || "Project";
+      modalDesc.textContent = url ? I18N[currentLang].modal.withUrl : I18N[currentLang].modal.noUrl;
+
+      const embed = toEmbed(url);
+      if(embed){
+        modalBody.innerHTML = `
+          <iframe class="w-full h-full"
+            src="${embed}"
+            title="Video"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen></iframe>
+        `;
+      } else {
+        modalBody.innerHTML = `
+          <div class="w-full h-full flex flex-col items-center justify-center text-center p-10">
+            <div class="w-20 h-20 rounded-full bg-primary/12 border border-[rgba(15,23,42,.10)] flex items-center justify-center mb-4">
+              <i data-lucide="video" class="w-8 h-8 text-ink"></i>
+            </div>
+            <p class="text-ink font-semibold">${I18N[currentLang].modal.placeholderTitle}</p>
+            <p class="text-softInk/70 text-sm mt-2 max-w-md">${I18N[currentLang].modal.placeholderDesc}</p>
+          </div>
+        `;
+      }
+
+      modalTags.innerHTML = (tags || []).map(t => `
+        <span class="px-3 py-1 rounded-full bg-white/60 border border-[rgba(15,23,42,.10)] text-ink/80">${t}</span>
+      `).join("");
+
+      lucide.createIcons();
+
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+      document.body.style.overflow = "hidden";
+      requestAnimationFrame(()=>{
+        backdrop.classList.add("open");
+        box.classList.add("open");
+        closeBtn.focus({preventScroll:true});
+      });
+    }
+
+    function closeModal(){
+      backdrop.classList.remove("open");
+      box.classList.remove("open");
+      setTimeout(()=>{
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+        modalBody.innerHTML = "";
+        document.body.style.overflow = "";
+      }, 320);
+    }
+
+    closeBtn.addEventListener("click", closeModal);
+    backdrop.addEventListener("click", closeModal);
+    window.addEventListener("keydown", (e)=>{
+      if(e.key === "Escape" && !modal.classList.contains("hidden")) closeModal();
+    });
+
+    // ===== Contact form (mailto demo) =====
+    qs("#contactForm")?.addEventListener("submit", (e)=>{
+      e.preventDefault();
+      const name = qs("#name").value.trim();
+      const email = qs("#email").value.trim();
+      const msg = qs("#message").value.trim();
+
+      const to = "contact@editor.com";
+      const subject = currentLang === "vi"
+        ? encodeURIComponent(`[Portfolio] Liên hệ từ ${name || "Khách hàng"}`)
+        : encodeURIComponent(`[Portfolio] Inquiry from ${name || "Client"}`);
+
+      const body = currentLang === "vi"
+        ? encodeURIComponent(`Tên: ${name}\nEmail: ${email}\n\nNội dung:\n${msg}\n\n---\nGửi từ Portfolio`)
+        : encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\nMessage:\n${msg}\n\n---\nSent from Portfolio`);
+
+      window.location.href = `mailto:${to}?subject=${subject}&body=${body}`;
+    });
+
+    // ===== Scrollspy =====
+    const sections = ["home","portfolio","about","contact"].map(id=> qs("#"+id)).filter(Boolean);
+    const navLinks = qsa(".navlink");
+
+    const spy = new IntersectionObserver((entries)=>{
+      entries.forEach(entry=>{
+        if(entry.isIntersecting){
+          const id = entry.target.id;
+          navLinks.forEach(a=>{
+            const href = a.getAttribute("href") || "";
+            a.classList.toggle("active", href === "#"+id);
+          });
+        }
+      });
+    }, { rootMargin: "-45% 0px -50% 0px", threshold: 0.01 });
+
+    sections.forEach(s => spy.observe(s));
+
+    // ===== Parallax orbs (subtle) =====
+    if(!prefersReduced){
+      const orbs = qsa("[data-orb]");
+      window.addEventListener("mousemove", (e)=>{
+        const x = (e.clientX / window.innerWidth) - 0.5;
+        const y = (e.clientY / window.innerHeight) - 0.5;
+        orbs.forEach((orb, i)=>{
+          const k = (i+1) * 10;
+          orb.style.transform = `translate3d(${x*k}px, ${y*k}px, 0)`;
+        });
+      }, { passive: true });
+    }
+
+    // ===== Spotlight mouse-follow =====
+    if(!prefersReduced){
+      const updateSpot = (x, y)=>{
+        const rx = Math.round((x / window.innerWidth) * 100);
+        const ry = Math.round((y / window.innerHeight) * 100);
+        document.documentElement.style.setProperty("--mx", rx + "%");
+        document.documentElement.style.setProperty("--my", ry + "%");
+      };
+      window.addEventListener("mousemove", (e)=> updateSpot(e.clientX, e.clientY), { passive:true });
+      window.addEventListener("touchmove", (e)=>{
+        const t = e.touches && e.touches[0];
+        if(t) updateSpot(t.clientX, t.clientY);
+      }, { passive:true });
+    }
+
+    // ===== Navbar auto-hide / reveal =====
+    const navbarWrap = qs("#navbarWrap");
+    let lastY = window.scrollY;
+    let ticking = false;
+
+    function onScroll(){
+      const y = window.scrollY;
+      const delta = y - lastY;
+      lastY = y;
+
+      if(y < 40){
+        navbarWrap.classList.remove("nav-hidden");
+        return;
+      }
+      if(delta > 6 && y > 120){
+        navbarWrap.classList.add("nav-hidden");
+      } else if(delta < -6){
+        navbarWrap.classList.remove("nav-hidden");
+      }
+    }
+
+    window.addEventListener("scroll", ()=>{
+      if(ticking) return;
+      ticking = true;
+      requestAnimationFrame(()=>{
+        onScroll();
+        ticking = false;
+      });
+    }, { passive:true });
+
+    // ===== Magnetic scroll (soft snap) =====
+    if(!prefersReduced){
+      let snapTimer = null;
+      const targets = sections.map(s => ({ id: s.id, el: s }));
+
+      function nearestSection(){
+        const y = window.scrollY;
+        let best = null;
+        let bestDist = Infinity;
+        targets.forEach(t=>{
+          const top = t.el.getBoundingClientRect().top + window.scrollY;
+          const dist = Math.abs(top - y);
+          if(dist < bestDist){
+            bestDist = dist;
+            best = { ...t, top, dist };
+          }
+        });
+        return best;
+      }
+
+      window.addEventListener("scroll", ()=>{
+        clearTimeout(snapTimer);
+        snapTimer = setTimeout(()=>{
+          const best = nearestSection();
+          if(!best) return;
+          const threshold = 90;
+          if(best.dist < threshold){
+            window.scrollTo({ top: best.top, behavior: "smooth" });
+          }
+        }, 140);
+      }, { passive:true });
+    }
+
+    // ===== i18n boot (Default English) =====
+    applyLang(currentLang);
+  </script>
+</body>
+</html>
