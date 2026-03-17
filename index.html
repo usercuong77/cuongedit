@@ -259,11 +259,14 @@
         display: flex;
         flex-direction: column;
         justify-content: center;
+        align-items: center;
         background: #000;
       }
       #modal-box.mobile-fullscreen #modal-body{
-        width: 100%;
-        aspect-ratio: 16 / 9 !important;
+        width: min(100vw, calc((100dvh - 72px) * 9 / 16));
+        max-height: calc(100dvh - 72px);
+        margin: 0 auto;
+        aspect-ratio: 9 / 16 !important;
         background: #000 !important;
       }
       #modal-box.mobile-fullscreen #modal-meta{
@@ -1573,9 +1576,9 @@
     function applyMobileFullscreenLayout(){
       box.classList.add("mobile-fullscreen");
       box.style.maxWidth = "none";
-      modalBody.style.maxWidth = "none";
-      modalBody.style.margin = "0";
-      modalBody.style.aspectRatio = "16 / 9";
+      modalBody.style.maxWidth = "";
+      modalBody.style.margin = "0 auto";
+      modalBody.style.aspectRatio = "9 / 16";
       modalBody.style.background = "#000";
     }
 
