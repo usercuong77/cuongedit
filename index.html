@@ -9,6 +9,24 @@
   <title>Cuong Edit - Short-Form Video Editor Portfolio</title>
 
   <meta name="description" content="Short-form video editor portfolio for TikTok, Reels, and Shorts. Hook-first editing, pacing, captions, and sound design focused on retention and conversion." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://edit.lamquoccuong.com/" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:site_name" content="Cuong Edit" />
+  <meta property="og:title" content="Cuong Edit - Short-Form Video Editor Portfolio" />
+  <meta property="og:description" content="Short-form video editor portfolio for TikTok, Reels, and Shorts. Hook-first editing, pacing, captions, and sound design focused on retention and conversion." />
+  <meta property="og:url" content="https://edit.lamquoccuong.com/" />
+  <meta property="og:image" content="https://edit.lamquoccuong.com/photo-public.jpg" />
+  <meta property="og:image:width" content="1400" />
+  <meta property="og:image:height" content="1400" />
+  <meta property="og:image:alt" content="Cuong Edit - Short-form video editor portfolio cover" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Cuong Edit - Short-Form Video Editor Portfolio" />
+  <meta name="twitter:description" content="Short-form video editor portfolio for TikTok, Reels, and Shorts. Hook-first editing, pacing, captions, and sound design focused on retention and conversion." />
+  <meta name="twitter:image" content="https://edit.lamquoccuong.com/photo-public.jpg" />
   <meta name="theme-color" content="#f6f7fb" />
 
   <!-- Tailwind -->
@@ -201,6 +219,55 @@
       .modal-box.open{
         transform: translateY(0);
         opacity: 1;
+      }
+
+      /* Fullscreen video modal on mobile */
+      #modal-box.mobile-fullscreen{
+        inset: 0;
+        width: 100vw;
+        height: 100dvh;
+        max-width: none !important;
+        border-radius: 0;
+        border: 0;
+        background: #000;
+        transform: translateY(100%);
+      }
+      #modal-box.mobile-fullscreen.open{
+        transform: translateY(0);
+      }
+      #modal-box.mobile-fullscreen .modal-head{
+        border-bottom-color: rgba(255,255,255,.14);
+        background: rgba(0,0,0,.65);
+      }
+      #modal-box.mobile-fullscreen .modal-head h3{
+        color: #fff;
+        max-width: calc(100vw - 130px);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      #modal-box.mobile-fullscreen .modal-head i{
+        color: #fff;
+      }
+      #modal-box.mobile-fullscreen #modal-close{
+        background: rgba(255,255,255,.12);
+        border-color: rgba(255,255,255,.22);
+        color: #fff;
+      }
+      #modal-box.mobile-fullscreen .modal-content{
+        height: calc(100dvh - 72px);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        background: #000;
+      }
+      #modal-box.mobile-fullscreen #modal-body{
+        width: 100%;
+        aspect-ratio: 16 / 9 !important;
+        background: #000 !important;
+      }
+      #modal-box.mobile-fullscreen #modal-meta{
+        display: none;
       }
     }
 
@@ -847,7 +914,7 @@
 
     <div class="relative w-full max-w-5xl rounded-3xl overflow-hidden border border-[rgba(15,23,42,.12)] bg-white/60 glass modal-box"
          id="modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-      <div class="flex items-center justify-between px-5 md:px-6 py-4 border-b border-[rgba(15,23,42,.10)]">
+      <div class="modal-head flex items-center justify-between px-5 md:px-6 py-4 border-b border-[rgba(15,23,42,.10)]">
         <div class="flex items-center gap-2 text-ink">
           <i data-lucide="play" class="w-5 h-5 text-primary"></i>
           <h3 class="text-base md:text-lg font-semibold" id="modal-title">Project</h3>
@@ -859,10 +926,10 @@
         </button>
       </div>
 
-      <div class="bg-white/35">
+      <div class="modal-content bg-white/35">
         <div class="aspect-video w-full bg-white/45 flex items-center justify-center" id="modal-body"></div>
 
-        <div class="p-5 md:p-6 text-left">
+        <div class="p-5 md:p-6 text-left" id="modal-meta">
           <p class="text-softInk/75 text-sm md:text-base" id="modal-desc"></p>
           <div class="mt-4 flex flex-wrap gap-2 text-xs" id="modal-tags"></div>
         </div>
@@ -1486,6 +1553,7 @@
 
     function resetModalMediaLayout(){
       modal.classList.remove("vertical-mode");
+      box.classList.remove("mobile-fullscreen");
       box.style.maxWidth = "";
       modalBody.style.maxWidth = "";
       modalBody.style.margin = "";
@@ -1499,6 +1567,15 @@
       modalBody.style.maxWidth = "390px";
       modalBody.style.margin = "0 auto";
       modalBody.style.aspectRatio = "9 / 16";
+      modalBody.style.background = "#000";
+    }
+
+    function applyMobileFullscreenLayout(){
+      box.classList.add("mobile-fullscreen");
+      box.style.maxWidth = "none";
+      modalBody.style.maxWidth = "none";
+      modalBody.style.margin = "0";
+      modalBody.style.aspectRatio = "16 / 9";
       modalBody.style.background = "#000";
     }
 
@@ -1568,7 +1645,10 @@
       const embed = toEmbed(url);
       resetModalMediaLayout();
       const isInstagram = /instagram\.com/i.test(url || "") || /instagram\.com/i.test(embed || "");
-      if(isInstagram || isShortProject){
+      const isMobileViewport = window.matchMedia("(max-width: 768px)").matches;
+      if(isMobileViewport){
+        applyMobileFullscreenLayout();
+      } else if(isInstagram || isShortProject){
         applyVerticalModalLayout();
       }
 
