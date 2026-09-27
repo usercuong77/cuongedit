@@ -906,7 +906,7 @@
           </button>
 
           <p class="text-xs text-softInk/60 mt-3 text-center" data-i18n="form.tip">
-            This form sends to Google Sheet and Telegram bot for faster follow-up.
+            I’ll read your message and get back to you soon.
           </p>
         </form>
       </div>
@@ -1007,10 +1007,10 @@
           submit:"Send message",
           sendingBtn:"Sending...",
           required:"Please fill in your name, email, and project details.",
-          sending:"Sending your request to Telegram bot...",
+          sending:"Sending your message...",
           success:"Request sent successfully. I received your info and will get back to you soon.",
           error:"Unable to send right now. Please try again in a moment.",
-          tip:"This form sends to Google Sheet and Telegram bot for faster follow-up."
+          tip:"I read every inquiry and will reply as soon as I can."
         },
         footer: { copy:"© 2026 Cuong Edit Portfolio. All rights reserved." },
         types: { all:"All", fashion:"Fashion", travel:"Travel", food:"Food", gaming:"Gaming", ads:"Ads", event:"Event", talking:"Talking-head", lifestyle:"Lifestyle" },
@@ -1071,10 +1071,10 @@
           submit:"Gửi tin nhắn",
           sendingBtn:"Đang gửi...",
           required:"Vui lòng nhập đầy đủ tên, email và nội dung dự án.",
-          sending:"Đang gửi yêu cầu vào Telegram bot...",
+          sending:"Đang gửi lời nhắn...",
           success:"Đã gửi yêu cầu thành công. Mình đã nhận thông tin và sẽ phản hồi sớm.",
           error:"Chưa gửi được lúc này. Bạn vui lòng thử lại sau ít phút.",
-          tip:"Form này gửi thẳng vào Google Sheet và Telegram bot để phản hồi nhanh hơn."
+          tip:"Mình sẽ tự đọc và phản hồi bạn sớm nhất có thể."
         },
         footer: { copy:"© 2026 Cuong Edit Portfolio. All rights reserved." },
         types: { all:"Tất cả", fashion:"Thời trang", travel:"Du lịch", food:"Ẩm thực", gaming:"Gaming", ads:"Quảng cáo", event:"Sự kiện", talking:"Talking-head", lifestyle:"Lifestyle" },
@@ -1732,7 +1732,7 @@
     const contactFormStatus = qs("[data-i18n='form.tip']");
     const CONTACT_LEAD_CONFIG = {
       // Keep this endpoint aligned with weblamquoccuong lead flow.
-      webhookUrl: "https://script.google.com/macros/s/AKfycbztTRTV_lJwa7V-dNg-LJUq0QV5C_0UXNL2bQbQntq_p7AZidNf-MrYte_-XLBdBmgx/exec",
+      webhookUrl: "https://clean-webhook-checker.onrender.com/webhook/lead",
       webhookMethod: "POST",
       webhookRequestMode: "cors",
       notifyViaTelegram: true
@@ -1811,7 +1811,7 @@
 
         const webhookResponse = await fetch(CONTACT_LEAD_CONFIG.webhookUrl, {
           method: CONTACT_LEAD_CONFIG.webhookMethod || "POST",
-          headers: { "Content-Type": "text/plain;charset=UTF-8" },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(leadPayload),
           mode: requestMode,
           keepalive: true
